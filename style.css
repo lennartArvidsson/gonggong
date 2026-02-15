@@ -19,6 +19,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     background: linear-gradient(135deg, var(--cream) 0%, var(--sand) 100%);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -388,56 +389,56 @@ input[type="number"]::-webkit-outer-spin-button {
 
 @media (max-width: 480px) {
     h1 {
-        font-size: 2rem;
-    }
-    
-    .subtitle {
-        font-size: 0.8rem;
-    }
-    
-    .time-text {
-        font-size: 2.5rem;
-    }
-    
-    .progress-ring {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .progress-ring svg {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .progress-ring-bg,
-    .progress-ring-circle {
-        cx: 100;
-        cy: 100;
-        r: 85;
-        stroke-dasharray: 534;
-    }
-    
-    input[type="number"] {
-        width: 80px;
-        padding: 15px;
         font-size: 1.6rem;
     }
-    
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .time-text {
+        font-size: 2rem;
+    }
+
+    .progress-ring {
+        width: 160px;
+        height: 160px;
+    }
+
+    .progress-ring svg {
+        width: 160px;
+        height: 160px;
+    }
+
+    .progress-ring-bg,
+    .progress-ring-circle {
+        cx: 80;
+        cy: 80;
+        r: 68;
+        stroke-dasharray: 427;
+    }
+
+    input[type="number"] {
+        width: 80px;
+        padding: 12px;
+        font-size: 1.4rem;
+    }
+
     .btn {
         padding: 12px 24px;
         font-size: 0.85rem;
     }
-    
+
     .controls {
-        margin-top: 25px;
+        margin-top: 20px;
     }
-    
+
     header {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
-    
+
     .timer-setup,
     .timer-display {
-        margin: 20px 0;
+        margin: 15px 0;
     }
 }

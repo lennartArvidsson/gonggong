@@ -49,7 +49,7 @@ function formatTime(seconds) {
 
 // Update progress circle
 function updateProgress() {
-    const radius = window.innerWidth <= 480 ? 85 : 100;
+    const radius = window.innerWidth <= 480 ? 68 : 100;
     const circumference = 2 * Math.PI * radius;
     const progress = remainingSeconds / totalSeconds;
     const offset = circumference * (1 - progress);
@@ -169,4 +169,13 @@ minutesInput.addEventListener('keypress', (e) => {
 
 secondsInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') startTimer();
+});
+
+// Scroll input into view when mobile keyboard opens
+minutesInput.addEventListener('focus', () => {
+    setTimeout(() => minutesInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+});
+
+secondsInput.addEventListener('focus', () => {
+    setTimeout(() => secondsInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
 });
