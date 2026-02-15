@@ -16,8 +16,10 @@ const soundIndicator = document.getElementById('soundIndicator');
 
 // Picker state
 const ITEM_HEIGHT = 50;
-let minuteValue = 5;
-let secondValue = 0;
+const savedMinutes = localStorage.getItem('gong_minutes');
+const savedSeconds = localStorage.getItem('gong_seconds');
+let minuteValue = savedMinutes !== null ? parseInt(savedMinutes) : 5;
+let secondValue = savedSeconds !== null ? parseInt(savedSeconds) : 0;
 
 // Build circular picker: 3 copies of items for seamless wrapping
 function buildPicker(scrollEl, count, initialValue) {
@@ -182,13 +184,13 @@ buildPicker(secondScroll, SECOND_COUNT, secondValue);
 setupPickerDrag(
     document.getElementById('minutePicker'),
     minuteScroll, MINUTE_COUNT,
-    (val) => { minuteValue = val; }
+    (val) => { minuteValue = val; localStorage.setItem('gong_minutes', val); }
 );
 
 setupPickerDrag(
     document.getElementById('secondPicker'),
     secondScroll, SECOND_COUNT,
-    (val) => { secondValue = val; }
+    (val) => { secondValue = val; localStorage.setItem('gong_seconds', val); }
 );
 
 // Preload gong sound
