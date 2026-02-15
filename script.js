@@ -19,45 +19,46 @@ const ITEM_HEIGHT = 50;
 let minuteValue = 5;
 let secondValue = 0;
 
-// Build picker items
+// Build circular picker: 3 copies of items for seamless wrapping
 function buildPicker(scrollEl, count, initialValue) {
-    // Add padding items so first/last can be centered
     const padItem = () => {
         const div = document.createElement('div');
         div.className = 'picker-item';
         div.textContent = '';
         return div;
     };
+
+    // Top padding so first item can center
     scrollEl.appendChild(padItem());
 
-    for (let i = 0; i < count; i++) {
-        const div = document.createElement('div');
-        div.className = 'picker-item';
-        div.textContent = i.toString().padStart(2, '0');
-        div.dataset.value = i;
-        scrollEl.appendChild(div);
+    // 3 copies: [0..count-1] [0..count-1] [0..count-1]
+    for (let copy = 0; copy < 3; copy++) {
+        for (let i = 0; i < count; i++) {
+            const div = document.createElement('div');
+            div.className = 'picker-item';
+            div.textContent = i.toString().padStart(2, '0');
+            div.dataset.value = i;
+            scrollEl.appendChild(div);
+        }
     }
+
     scrollEl.appendChild(padItem());
 
-    // Set initial position
-    scrollEl.style.transform = `translateY(${-initialValue * ITEM_HEIGHT}px)`;
-    updateActiveItem(scrollEl, initialValue);
+    // Start in the middle copy
+    const middleOffset = -(count + initialValue) * ITEM_HEIGHT;
+    scrollEl.style.transform = `translateY(${middleOffset}px)`;
+    updateActiveItem(scrollEl, initialValue, count);
 }
 
-function updateActiveItem(scrollEl, value) {
+function updateActiveItem(scrollEl, value, count) {
     const items = scrollEl.querySelectorAll('.picker-item');
-    items.forEach((item, i) => {
-        // i=0 is top padding, so value 0 = index 1
-        item.classList.toggle('active', i === value + 1);
+    items.forEach((item) => {
+        item.classList.toggle('active', item.dataset.value == value);
     });
 }
 
-function getValueFromOffset(offset) {
-    return Math.round(-offset / ITEM_HEIGHT);
-}
-
-// Touch/mouse drag handling for pickers
-function setupPickerDrag(pickerEl, scrollEl, maxValue, onChange) {
+// Touch/mouse drag handling for circular pickers
+function setupPickerDrag(pickerEl, scrollEl, count, onChange) {
     let startY = 0;
     let startOffset = 0;
     let currentOffset = 0;
@@ -72,11 +73,21 @@ function setupPickerDrag(pickerEl, scrollEl, maxValue, onChange) {
         return match ? parseFloat(match[1]) : 0;
     }
 
-    function clampAndSnap(offset) {
-        const minOffset = -(maxValue) * ITEM_HEIGHT;
-        const maxOffset = 0;
-        offset = Math.max(minOffset, Math.min(maxOffset, offset));
+    function snap(offset) {
         return Math.round(offset / ITEM_HEIGHT) * ITEM_HEIGHT;
+    }
+
+    // Get value from offset (accounting for middle copy start)
+    function getValue(offset) {
+        const index = Math.round(-offset / ITEM_HEIGHT);
+        return ((index % count) + count) % count;
+    }
+
+    // Teleport to middle copy without visual change
+    function teleportToMiddle(offset) {
+        const index = Math.round(-offset / ITEM_HEIGHT);
+        const value = ((index % count) + count) % count;
+        return -(count + value) * ITEM_HEIGHT;
     }
 
     function onStart(y) {
@@ -102,23 +113,33 @@ function setupPickerDrag(pickerEl, scrollEl, maxValue, onChange) {
         currentOffset = startOffset + (y - startY);
         scrollEl.style.transform = `translateY(${currentOffset}px)`;
 
-        const val = getValueFromOffset(clampAndSnap(currentOffset));
-        updateActiveItem(scrollEl, val);
+        const val = getValue(snap(currentOffset));
+        updateActiveItem(scrollEl, val, count);
     }
 
     function onEnd() {
         if (!isDragging) return;
         isDragging = false;
+
+        // Apply momentum and snap
+        let finalOffset = snap(currentOffset + velocity * 150);
+        const val = getValue(finalOffset);
+
+        // Animate to snapped position
         scrollEl.style.transition = 'transform 0.3s ease-out';
-
-        // Apply momentum
-        let finalOffset = currentOffset + velocity * 150;
-        finalOffset = clampAndSnap(finalOffset);
-
         scrollEl.style.transform = `translateY(${finalOffset}px)`;
-        const val = getValueFromOffset(finalOffset);
-        updateActiveItem(scrollEl, val);
+
+        updateActiveItem(scrollEl, val, count);
         onChange(val);
+
+        // After animation, silently teleport to middle copy
+        setTimeout(() => {
+            const middleOffset = teleportToMiddle(finalOffset);
+            if (middleOffset !== finalOffset) {
+                scrollEl.style.transition = 'none';
+                scrollEl.style.transform = `translateY(${middleOffset}px)`;
+            }
+        }, 320);
     }
 
     // Touch events
@@ -152,18 +173,21 @@ function setupPickerDrag(pickerEl, scrollEl, maxValue, onChange) {
 const minuteScroll = document.getElementById('minuteScroll');
 const secondScroll = document.getElementById('secondScroll');
 
-buildPicker(minuteScroll, 61, minuteValue);  // 0-60
-buildPicker(secondScroll, 60, secondValue);   // 0-59
+const MINUTE_COUNT = 61; // 0-60
+const SECOND_COUNT = 60; // 0-59
+
+buildPicker(minuteScroll, MINUTE_COUNT, minuteValue);
+buildPicker(secondScroll, SECOND_COUNT, secondValue);
 
 setupPickerDrag(
     document.getElementById('minutePicker'),
-    minuteScroll, 60,
+    minuteScroll, MINUTE_COUNT,
     (val) => { minuteValue = val; }
 );
 
 setupPickerDrag(
     document.getElementById('secondPicker'),
-    secondScroll, 59,
+    secondScroll, SECOND_COUNT,
     (val) => { secondValue = val; }
 );
 

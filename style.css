@@ -1,9 +1,9 @@
 :root {
     --clay: #c77d5c;
     --sand: #e8d5c4;
-    --earth: #8b6f47;
-    --moss: #7a9b76;
-    --stone: #4a4a4a;
+    --earth: #6b5230;
+    --moss: #5a7d56;
+    --stone: #2e2e2e;
     --cream: #faf8f5;
     --shadow: rgba(139, 111, 71, 0.15);
 }
@@ -75,9 +75,8 @@ h1 {
 .subtitle {
     font-size: 0.85rem;
     color: var(--moss);
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 1px;
-    opacity: 0.8;
 }
 
 /* Scroll picker */
@@ -177,7 +176,7 @@ h1 {
     font-size: 1.8rem;
     font-weight: 400;
     color: var(--stone);
-    opacity: 0.3;
+    opacity: 0.35;
     transition: opacity 0.15s ease;
 }
 
@@ -209,7 +208,7 @@ h1 {
     display: flex;
     gap: 15px;
     justify-content: center;
-    margin-top: 30px;
+    margin-top: 55px;
 }
 
 .btn {
@@ -325,5 +324,5 @@ h1 {
     .time-text { font-size: 3rem; }
     header { margin-bottom: 20px; }
     .btn { padding: 14px 28px; font-size: 0.9rem; }
-    .controls { margin-top: 25px; }
+    .controls { margin-top: 45px; }
 }
