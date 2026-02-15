@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meditationsgong</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,38 +11,33 @@
 </head>
 <body>
     <div class="container">
-        <div class="gong-circle">
-            <div class="gong-ripple"></div>
-            <div class="gong-ripple"></div>
-            <div class="gong-ripple"></div>
-        </div>
-        
         <header>
             <h1>Meditationsgong</h1>
             <p class="subtitle">Andas. Var närvarande. Lyssna.</p>
         </header>
 
         <div class="timer-setup" id="setupView">
-            <div class="time-input-group">
-                <div class="input-wrapper">
-                    <label for="minutes">Minuter</label>
-                    <input type="number" id="minutes" min="0" max="60" value="5">
+            <div class="picker-group">
+                <div class="picker-wrapper">
+                    <label>Minuter</label>
+                    <div class="picker" id="minutePicker">
+                        <div class="picker-highlight"></div>
+                        <div class="picker-scroll" id="minuteScroll"></div>
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <label for="seconds">Sekunder</label>
-                    <input type="number" id="seconds" min="0" max="59" value="0">
+                <div class="picker-separator">:</div>
+                <div class="picker-wrapper">
+                    <label>Sekunder</label>
+                    <div class="picker" id="secondPicker">
+                        <div class="picker-highlight"></div>
+                        <div class="picker-scroll" id="secondScroll"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="timer-display" id="timerView">
-            <div class="progress-ring">
-                <svg width="240" height="240">
-                    <circle class="progress-ring-bg" cx="120" cy="120" r="100"></circle>
-                    <circle class="progress-ring-circle" cx="120" cy="120" r="100"></circle>
-                </svg>
-                <div class="time-text" id="timeDisplay">05:00</div>
-            </div>
+            <div class="time-text" id="timeDisplay">05:00</div>
         </div>
 
         <div class="controls">

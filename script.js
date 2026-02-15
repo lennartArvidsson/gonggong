@@ -8,23 +8,172 @@ let gongAudio = null;
 // DOM elements
 const setupView = document.getElementById('setupView');
 const timerView = document.getElementById('timerView');
-const minutesInput = document.getElementById('minutes');
-const secondsInput = document.getElementById('seconds');
 const timeDisplay = document.getElementById('timeDisplay');
 const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const resetBtn = document.getElementById('resetBtn');
-const progressCircle = document.querySelector('.progress-ring-circle');
-const progressRing = document.querySelector('.progress-ring');
 const soundIndicator = document.getElementById('soundIndicator');
 
-// Preload gong sound (call from user gesture to unlock audio)
+// Picker state
+const ITEM_HEIGHT = 50;
+let minuteValue = 5;
+let secondValue = 0;
+
+// Build picker items
+function buildPicker(scrollEl, count, initialValue) {
+    // Add padding items so first/last can be centered
+    const padItem = () => {
+        const div = document.createElement('div');
+        div.className = 'picker-item';
+        div.textContent = '';
+        return div;
+    };
+    scrollEl.appendChild(padItem());
+
+    for (let i = 0; i < count; i++) {
+        const div = document.createElement('div');
+        div.className = 'picker-item';
+        div.textContent = i.toString().padStart(2, '0');
+        div.dataset.value = i;
+        scrollEl.appendChild(div);
+    }
+    scrollEl.appendChild(padItem());
+
+    // Set initial position
+    scrollEl.style.transform = `translateY(${-initialValue * ITEM_HEIGHT}px)`;
+    updateActiveItem(scrollEl, initialValue);
+}
+
+function updateActiveItem(scrollEl, value) {
+    const items = scrollEl.querySelectorAll('.picker-item');
+    items.forEach((item, i) => {
+        // i=0 is top padding, so value 0 = index 1
+        item.classList.toggle('active', i === value + 1);
+    });
+}
+
+function getValueFromOffset(offset) {
+    return Math.round(-offset / ITEM_HEIGHT);
+}
+
+// Touch/mouse drag handling for pickers
+function setupPickerDrag(pickerEl, scrollEl, maxValue, onChange) {
+    let startY = 0;
+    let startOffset = 0;
+    let currentOffset = 0;
+    let isDragging = false;
+    let lastY = 0;
+    let velocity = 0;
+    let lastTime = 0;
+
+    function getOffset() {
+        const transform = scrollEl.style.transform;
+        const match = transform.match(/translateY\((.+?)px\)/);
+        return match ? parseFloat(match[1]) : 0;
+    }
+
+    function clampAndSnap(offset) {
+        const minOffset = -(maxValue) * ITEM_HEIGHT;
+        const maxOffset = 0;
+        offset = Math.max(minOffset, Math.min(maxOffset, offset));
+        return Math.round(offset / ITEM_HEIGHT) * ITEM_HEIGHT;
+    }
+
+    function onStart(y) {
+        isDragging = true;
+        startY = y;
+        startOffset = getOffset();
+        velocity = 0;
+        lastY = y;
+        lastTime = Date.now();
+        scrollEl.style.transition = 'none';
+    }
+
+    function onMove(y) {
+        if (!isDragging) return;
+        const now = Date.now();
+        const dt = now - lastTime;
+        if (dt > 0) {
+            velocity = (y - lastY) / dt;
+        }
+        lastY = y;
+        lastTime = now;
+
+        currentOffset = startOffset + (y - startY);
+        scrollEl.style.transform = `translateY(${currentOffset}px)`;
+
+        const val = getValueFromOffset(clampAndSnap(currentOffset));
+        updateActiveItem(scrollEl, val);
+    }
+
+    function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        scrollEl.style.transition = 'transform 0.3s ease-out';
+
+        // Apply momentum
+        let finalOffset = currentOffset + velocity * 150;
+        finalOffset = clampAndSnap(finalOffset);
+
+        scrollEl.style.transform = `translateY(${finalOffset}px)`;
+        const val = getValueFromOffset(finalOffset);
+        updateActiveItem(scrollEl, val);
+        onChange(val);
+    }
+
+    // Touch events
+    pickerEl.addEventListener('touchstart', (e) => {
+        onStart(e.touches[0].clientY);
+    }, { passive: true });
+
+    pickerEl.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        onMove(e.touches[0].clientY);
+    }, { passive: false });
+
+    pickerEl.addEventListener('touchend', () => onEnd());
+
+    // Mouse events
+    pickerEl.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        onStart(e.clientY);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) onMove(e.clientY);
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) onEnd();
+    });
+}
+
+// Initialize pickers
+const minuteScroll = document.getElementById('minuteScroll');
+const secondScroll = document.getElementById('secondScroll');
+
+buildPicker(minuteScroll, 61, minuteValue);  // 0-60
+buildPicker(secondScroll, 60, secondValue);   // 0-59
+
+setupPickerDrag(
+    document.getElementById('minutePicker'),
+    minuteScroll, 60,
+    (val) => { minuteValue = val; }
+);
+
+setupPickerDrag(
+    document.getElementById('secondPicker'),
+    secondScroll, 59,
+    (val) => { secondValue = val; }
+);
+
+// Preload gong sound
 function preloadGong() {
     gongAudio = new Audio('gongong.mp3');
     gongAudio.load();
 }
 
-// Play gong sound from MP3 file
+// Play gong sound
 function playGong() {
     if (gongAudio) {
         gongAudio.currentTime = 0;
@@ -32,8 +181,6 @@ function playGong() {
             console.log('Kunde inte spela ljud:', err);
         });
     }
-
-    // Show sound indicator
     soundIndicator.classList.add('active');
     setTimeout(() => {
         soundIndicator.classList.remove('active');
@@ -47,28 +194,15 @@ function formatTime(seconds) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Update progress circle
-function updateProgress() {
-    const radius = window.innerWidth <= 480 ? 68 : 100;
-    const circumference = 2 * Math.PI * radius;
-    const progress = remainingSeconds / totalSeconds;
-    const offset = circumference * (1 - progress);
-    progressCircle.style.strokeDashoffset = offset;
-}
-
 // Timer tick
 function tick() {
     remainingSeconds--;
     timeDisplay.textContent = formatTime(remainingSeconds);
-    updateProgress();
-    
-    // Play gong when timer ends
+
     if (remainingSeconds === 0) {
         clearInterval(timerInterval);
         playGong();
-        progressRing.classList.remove('pulse');
-        
-        // Show completion state
+
         setTimeout(() => {
             timeDisplay.textContent = '00:00';
             startBtn.style.display = 'none';
@@ -76,8 +210,7 @@ function tick() {
             resetBtn.style.display = 'inline-block';
         }, 100);
     }
-    
-    // Warning gong at 10 seconds
+
     if (remainingSeconds === 10) {
         playGong();
     }
@@ -85,54 +218,38 @@ function tick() {
 
 // Start timer
 function startTimer() {
-    const minutes = parseInt(minutesInput.value) || 0;
-    const seconds = parseInt(secondsInput.value) || 0;
-    
-    totalSeconds = minutes * 60 + seconds;
+    totalSeconds = minuteValue * 60 + secondValue;
 
-    // Preload audio during user gesture so playback is allowed later
     preloadGong();
 
     if (totalSeconds === 0) {
         alert('Ställ in en tid större än 0');
         return;
     }
-    
+
     remainingSeconds = totalSeconds;
-    
-    // Switch views
+
     setupView.style.display = 'none';
     timerView.classList.add('active');
-    
-    // Update display
+
     timeDisplay.textContent = formatTime(remainingSeconds);
-    updateProgress();
-    
-    // Show controls
+
     startBtn.style.display = 'none';
     pauseBtn.style.display = 'inline-block';
     resetBtn.style.display = 'inline-block';
-    
-    // Start pulsing animation
-    progressRing.classList.add('pulse');
-    
-    // Start countdown
+
     timerInterval = setInterval(tick, 1000);
 }
 
 // Pause timer
 function pauseTimer() {
     if (isPaused) {
-        // Resume
         timerInterval = setInterval(tick, 1000);
         pauseBtn.querySelector('.btn-text').textContent = 'Paus';
-        progressRing.classList.add('pulse');
         isPaused = false;
     } else {
-        // Pause
         clearInterval(timerInterval);
         pauseBtn.querySelector('.btn-text').textContent = 'Fortsätt';
-        progressRing.classList.remove('pulse');
         isPaused = true;
     }
 }
@@ -141,41 +258,17 @@ function pauseTimer() {
 function resetTimer() {
     clearInterval(timerInterval);
     isPaused = false;
-    
-    // Reset views
+
     setupView.style.display = 'block';
     timerView.classList.remove('active');
-    
-    // Reset controls
+
     startBtn.style.display = 'inline-block';
     pauseBtn.style.display = 'none';
     resetBtn.style.display = 'none';
     pauseBtn.querySelector('.btn-text').textContent = 'Paus';
-    
-    // Reset progress
-    progressRing.classList.remove('pulse');
-    progressCircle.style.strokeDashoffset = 0;
 }
 
 // Event listeners
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
 resetBtn.addEventListener('click', resetTimer);
-
-// Allow Enter key to start
-minutesInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') startTimer();
-});
-
-secondsInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') startTimer();
-});
-
-// Scroll input into view when mobile keyboard opens
-minutesInput.addEventListener('focus', () => {
-    setTimeout(() => minutesInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-});
-
-secondsInput.addEventListener('focus', () => {
-    setTimeout(() => secondsInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-});
