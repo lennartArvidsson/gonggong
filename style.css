@@ -108,20 +108,20 @@ body::before {
 }
 
 header {
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
 h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     font-weight: 300;
     color: var(--earth);
     letter-spacing: 2px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .subtitle {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: var(--moss);
     font-weight: 300;
     letter-spacing: 1px;
@@ -129,7 +129,7 @@ h1 {
 }
 
 .timer-setup {
-    margin: 40px 0;
+    margin: 25px 0;
     animation: slideIn 0.5s ease-out;
 }
 
@@ -194,7 +194,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .timer-display {
-    margin: 40px 0;
+    margin: 25px 0;
     display: none;
     animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -216,8 +216,8 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .progress-ring {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 240px;
+    height: 240px;
     margin: 0 auto;
 }
 
@@ -236,7 +236,7 @@ input[type="number"]::-webkit-outer-spin-button {
     stroke: var(--clay);
     stroke-width: 8;
     stroke-linecap: round;
-    stroke-dasharray: 754; /* 2 * π * 120 */
+    stroke-dasharray: 628; /* 2 * π * 100 */
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 1s linear;
     filter: drop-shadow(0 0 8px rgba(199, 125, 92, 0.3));
@@ -261,7 +261,7 @@ input[type="number"]::-webkit-outer-spin-button {
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: 'Cormorant Garamond', serif;
-    font-size: 4rem;
+    font-size: 3rem;
     font-weight: 300;
     color: var(--stone);
     letter-spacing: 3px;
@@ -271,7 +271,7 @@ input[type="number"]::-webkit-outer-spin-button {
     display: flex;
     gap: 15px;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 30px;
 }
 
 .btn {
@@ -388,40 +388,56 @@ input[type="number"]::-webkit-outer-spin-button {
 
 @media (max-width: 480px) {
     h1 {
-        font-size: 2.2rem;
+        font-size: 2rem;
     }
     
     .subtitle {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
     
     .time-text {
-        font-size: 3rem;
+        font-size: 2.5rem;
     }
     
     .progress-ring {
-        width: 240px;
-        height: 240px;
+        width: 200px;
+        height: 200px;
     }
     
     .progress-ring svg {
-        width: 240px;
-        height: 240px;
+        width: 200px;
+        height: 200px;
     }
     
     .progress-ring-bg,
     .progress-ring-circle {
-        r: 100;
-        stroke-dasharray: 628;
+        cx: 100;
+        cy: 100;
+        r: 85;
+        stroke-dasharray: 534;
     }
     
     input[type="number"] {
-        width: 85px;
-        font-size: 1.8rem;
+        width: 80px;
+        padding: 15px;
+        font-size: 1.6rem;
     }
     
     .btn {
-        padding: 14px 28px;
-        font-size: 0.9rem;
+        padding: 12px 24px;
+        font-size: 0.85rem;
+    }
+    
+    .controls {
+        margin-top: 25px;
+    }
+    
+    header {
+        margin-bottom: 20px;
+    }
+    
+    .timer-setup,
+    .timer-display {
+        margin: 20px 0;
     }
 }

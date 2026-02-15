@@ -3,8 +3,7 @@ let totalSeconds = 0;
 let remainingSeconds = 0;
 let timerInterval = null;
 let isPaused = false;
-let audioContext = null;
-let gongSound = null;
+let gongAudio = null;
 
 // DOM elements
 const setupView = document.getElementById('setupView');
@@ -19,42 +18,21 @@ const progressCircle = document.querySelector('.progress-ring-circle');
 const progressRing = document.querySelector('.progress-ring');
 const soundIndicator = document.getElementById('soundIndicator');
 
-// Initialize audio context
-function initAudio() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
+// Preload gong sound (call from user gesture to unlock audio)
+function preloadGong() {
+    gongAudio = new Audio('gongong.mp3');
+    gongAudio.load();
 }
 
-// Create gong sound using Web Audio API
+// Play gong sound from MP3 file
 function playGong() {
-    initAudio();
-    
-    const now = audioContext.currentTime;
-    const oscillator1 = audioContext.createOscillator();
-    const oscillator2 = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    // Create rich gong-like sound with two frequencies
-    oscillator1.frequency.setValueAtTime(150, now);
-    oscillator2.frequency.setValueAtTime(225, now);
-    
-    oscillator1.type = 'sine';
-    oscillator2.type = 'sine';
-    
-    // Envelope for gong decay
-    gainNode.gain.setValueAtTime(0.5, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 4);
-    
-    oscillator1.connect(gainNode);
-    oscillator2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator1.start(now);
-    oscillator2.start(now);
-    oscillator1.stop(now + 4);
-    oscillator2.stop(now + 4);
-    
+    if (gongAudio) {
+        gongAudio.currentTime = 0;
+        gongAudio.play().catch(err => {
+            console.log('Kunde inte spela ljud:', err);
+        });
+    }
+
     // Show sound indicator
     soundIndicator.classList.add('active');
     setTimeout(() => {
@@ -71,7 +49,7 @@ function formatTime(seconds) {
 
 // Update progress circle
 function updateProgress() {
-    const radius = window.innerWidth <= 480 ? 100 : 120;
+    const radius = window.innerWidth <= 480 ? 85 : 100;
     const circumference = 2 * Math.PI * radius;
     const progress = remainingSeconds / totalSeconds;
     const offset = circumference * (1 - progress);
@@ -111,7 +89,10 @@ function startTimer() {
     const seconds = parseInt(secondsInput.value) || 0;
     
     totalSeconds = minutes * 60 + seconds;
-    
+
+    // Preload audio during user gesture so playback is allowed later
+    preloadGong();
+
     if (totalSeconds === 0) {
         alert('Ställ in en tid större än 0');
         return;
@@ -189,7 +170,3 @@ minutesInput.addEventListener('keypress', (e) => {
 secondsInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') startTimer();
 });
-
-// Initialize audio context on user interaction
-document.addEventListener('click', initAudio, { once: true });
-document.addEventListener('touchstart', initAudio, { once: true });
