@@ -169,7 +169,7 @@ setupPickerDrag(
 
 // Preload gong sound
 function preloadGong() {
-    gongAudio = new Audio('gongong.mp3');
+    gongAudio = new Audio('gongong.wav');
     gongAudio.load();
 }
 
