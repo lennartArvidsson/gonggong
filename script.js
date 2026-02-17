@@ -238,8 +238,11 @@ function tick() {
 
     if (remainingSeconds === 0) {
         clearInterval(timerInterval);
-        playGong();
-        setTimeout(showFinished, 100);
+        if (!document.hidden) {
+            playGong();
+            setTimeout(showFinished, 100);
+        }
+        // If hidden: endTime stays set so resumeFromBackground handles gong on return
     }
 }
 
