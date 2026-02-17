@@ -223,7 +223,9 @@ function formatTime(seconds) {
 
 function showFinished() {
     localStorage.removeItem('gong_endTime');
+    clearInterval(timerInterval);
     timerInterval = null;
+    endTime = null;
     startBtn.style.display = 'none';
     pauseBtn.style.display = 'none';
     resetBtn.style.display = 'inline-block';
@@ -291,6 +293,8 @@ function pauseTimer() {
 function resetTimer() {
     clearInterval(timerInterval);
     localStorage.removeItem('gong_endTime');
+    timerInterval = null;
+    endTime = null;
     isPaused = false;
 
     setupView.style.display = 'block';
@@ -336,11 +340,22 @@ function restoreTimer() {
 
 restoreTimer();
 
-// Sync display when returning from background (iOS Safari)
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && timerInterval && !isPaused) {
+// Sync and restart interval when returning from background (iOS Safari)
+function resumeFromBackground() {
+    if (!isPaused && endTime) {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(tick, 500);
         tick();
     }
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resumeFromBackground();
+});
+
+// Fallback for iOS PWA / bfcache navigation
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) resumeFromBackground();
 });
 
 // Event listeners
