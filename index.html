@@ -1,64 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meditationsgong</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
     <div class="container">
-        <header>
-            <h1>Meditationsgong</h1>
-            <p class="subtitle">Andas. Var närvarande. Lyssna.</p>
-        </header>
+      <header>
+        <h1>Meditationsgong</h1>
+        <p class="subtitle">Andas. Var närvarande. Lyssna.</p>
+      </header>
 
-        <div class="timer-setup" id="setupView">
-            <div class="picker-group">
-                <div class="picker-wrapper">
-                    <label>Minuter</label>
-                    <div class="picker" id="minutePicker">
-                        <div class="picker-highlight"></div>
-                        <div class="picker-scroll" id="minuteScroll"></div>
-                    </div>
-                </div>
-                <div class="picker-separator">:</div>
-                <div class="picker-wrapper">
-                    <label>Sekunder</label>
-                    <div class="picker" id="secondPicker">
-                        <div class="picker-highlight"></div>
-                        <div class="picker-scroll" id="secondScroll"></div>
-                    </div>
-                </div>
+      <div class="timer-setup" id="setupView">
+        <div class="picker-group">
+          <div class="picker-wrapper">
+            <label>Minuter</label>
+            <div class="picker" id="minutePicker">
+              <div class="picker-highlight"></div>
+              <div class="picker-scroll" id="minuteScroll"></div>
             </div>
+          </div>
+          <div class="picker-separator">:</div>
+          <div class="picker-wrapper">
+            <label>Sekunder</label>
+            <div class="picker" id="secondPicker">
+              <div class="picker-highlight"></div>
+              <div class="picker-scroll" id="secondScroll"></div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="timer-display" id="timerView">
-            <div class="time-text" id="timeDisplay">05:00</div>
-        </div>
+      <div class="timer-display" id="timerView">
+        <div class="time-text" id="timeDisplay">05:00</div>
+      </div>
 
-        <div class="controls">
-            <button class="btn btn-start" id="startBtn">
-                <span class="btn-text">Start</span>
-            </button>
-            <button class="btn btn-pause" id="pauseBtn" style="display: none;">
-                <span class="btn-text">Paus</span>
-            </button>
-            <button class="btn btn-reset" id="resetBtn" style="display: none;">
-                <span class="btn-text">Återställ</span>
-            </button>
-        </div>
+      <div class="controls">
+        <button class="btn btn-start" id="startBtn">
+          <span class="btn-text">Start</span>
+        </button>
+        <button class="btn btn-pause" id="pauseBtn" style="display: none">
+          <span class="btn-text">Paus</span>
+        </button>
+        <button class="btn btn-reset" id="resetBtn" style="display: none">
+          <span class="btn-text">Återställ</span>
+        </button>
+      </div>
 
-        <div class="sound-indicator" id="soundIndicator">
-            <div class="sound-wave"></div>
-            <div class="sound-wave"></div>
-            <div class="sound-wave"></div>
-        </div>
+      <div class="sound-indicator" id="soundIndicator">
+        <div class="sound-wave"></div>
+        <div class="sound-wave"></div>
+        <div class="sound-wave"></div>
+      </div>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

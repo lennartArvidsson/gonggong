@@ -4,6 +4,7 @@ let remainingSeconds = 0;
 let timerInterval = null;
 let isPaused = false;
 let gongAudio = null;
+let endTime = null; // wall-clock time when timer will reach zero
 
 // DOM elements
 const setupView = document.getElementById('setupView');
@@ -222,23 +223,19 @@ function formatTime(seconds) {
 
 // Timer tick
 function tick() {
-    remainingSeconds--;
+    remainingSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
     timeDisplay.textContent = formatTime(remainingSeconds);
 
     if (remainingSeconds === 0) {
         clearInterval(timerInterval);
+        timerInterval = null;
         playGong();
 
         setTimeout(() => {
-            timeDisplay.textContent = '00:00';
             startBtn.style.display = 'none';
             pauseBtn.style.display = 'none';
             resetBtn.style.display = 'inline-block';
         }, 100);
-    }
-
-    if (remainingSeconds === 10) {
-        playGong();
     }
 }
 
@@ -264,13 +261,15 @@ function startTimer() {
     pauseBtn.style.display = 'inline-block';
     resetBtn.style.display = 'inline-block';
 
-    timerInterval = setInterval(tick, 1000);
+    endTime = Date.now() + remainingSeconds * 1000;
+    timerInterval = setInterval(tick, 500);
 }
 
 // Pause timer
 function pauseTimer() {
     if (isPaused) {
-        timerInterval = setInterval(tick, 1000);
+        endTime = Date.now() + remainingSeconds * 1000;
+        timerInterval = setInterval(tick, 500);
         pauseBtn.querySelector('.btn-text').textContent = 'Paus';
         isPaused = false;
     } else {
@@ -293,6 +292,13 @@ function resetTimer() {
     resetBtn.style.display = 'none';
     pauseBtn.querySelector('.btn-text').textContent = 'Paus';
 }
+
+// Sync display immediately when returning from background (iOS)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && timerInterval && !isPaused) {
+        tick();
+    }
+});
 
 // Event listeners
 startBtn.addEventListener('click', startTimer);
