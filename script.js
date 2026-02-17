@@ -353,6 +353,8 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) resumeFromBackground();
 });
 
+window.addEventListener('focus', resumeFromBackground);
+
 // Fallback for iOS PWA / bfcache navigation
 window.addEventListener('pageshow', (e) => {
     if (e.persisted) resumeFromBackground();
