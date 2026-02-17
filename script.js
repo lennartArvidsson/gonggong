@@ -221,6 +221,14 @@ function formatTime(seconds) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+function showFinished() {
+    localStorage.removeItem('gong_endTime');
+    timerInterval = null;
+    startBtn.style.display = 'none';
+    pauseBtn.style.display = 'none';
+    resetBtn.style.display = 'inline-block';
+}
+
 // Timer tick
 function tick() {
     remainingSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
@@ -228,15 +236,14 @@ function tick() {
 
     if (remainingSeconds === 0) {
         clearInterval(timerInterval);
-        timerInterval = null;
         playGong();
-
-        setTimeout(() => {
-            startBtn.style.display = 'none';
-            pauseBtn.style.display = 'none';
-            resetBtn.style.display = 'inline-block';
-        }, 100);
+        setTimeout(showFinished, 100);
     }
+}
+
+function beginCountdown() {
+    localStorage.setItem('gong_endTime', endTime);
+    timerInterval = setInterval(tick, 500);
 }
 
 // Start timer
@@ -262,18 +269,19 @@ function startTimer() {
     resetBtn.style.display = 'inline-block';
 
     endTime = Date.now() + remainingSeconds * 1000;
-    timerInterval = setInterval(tick, 500);
+    beginCountdown();
 }
 
 // Pause timer
 function pauseTimer() {
     if (isPaused) {
         endTime = Date.now() + remainingSeconds * 1000;
-        timerInterval = setInterval(tick, 500);
+        beginCountdown();
         pauseBtn.querySelector('.btn-text').textContent = 'Paus';
         isPaused = false;
     } else {
         clearInterval(timerInterval);
+        localStorage.removeItem('gong_endTime');
         pauseBtn.querySelector('.btn-text').textContent = 'Fortsätt';
         isPaused = true;
     }
@@ -282,6 +290,7 @@ function pauseTimer() {
 // Reset timer
 function resetTimer() {
     clearInterval(timerInterval);
+    localStorage.removeItem('gong_endTime');
     isPaused = false;
 
     setupView.style.display = 'block';
@@ -293,7 +302,41 @@ function resetTimer() {
     pauseBtn.querySelector('.btn-text').textContent = 'Paus';
 }
 
-// Sync display immediately when returning from background (iOS)
+// Restore timer if app was terminated while running (iOS PWA)
+function restoreTimer() {
+    const saved = localStorage.getItem('gong_endTime');
+    if (!saved) return;
+
+    const savedEnd = parseInt(saved);
+    const remaining = Math.ceil((savedEnd - Date.now()) / 1000);
+
+    preloadGong();
+
+    if (remaining > 0) {
+        endTime = savedEnd;
+        remainingSeconds = remaining;
+        totalSeconds = remaining;
+
+        setupView.style.display = 'none';
+        timerView.classList.add('active');
+        timeDisplay.textContent = formatTime(remainingSeconds);
+        startBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
+        resetBtn.style.display = 'inline-block';
+        beginCountdown();
+    } else {
+        // Timer expired while away
+        setupView.style.display = 'none';
+        timerView.classList.add('active');
+        timeDisplay.textContent = '00:00';
+        playGong();
+        showFinished();
+    }
+}
+
+restoreTimer();
+
+// Sync display when returning from background (iOS Safari)
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && timerInterval && !isPaused) {
         tick();
