@@ -5,6 +5,7 @@ let timerInterval = null;
 let isPaused = false;
 let gongAudio = null;
 let endTime = null; // wall-clock time when timer will reach zero
+let warningPlayed = false;
 
 // DOM elements
 const setupView = document.getElementById("setupView");
@@ -205,11 +206,24 @@ setupPickerDrag(
 // och sparar sedan samma Audio-objekt för senare uppspelning.
 // -------------------------------------------------------
 function unlockAndPreloadGong() {
-  gongAudio = new Audio("gongong.wav");
+  if (!gongAudio) {
+    gongAudio = new Audio("gongong.wav");
+  }
   gongAudio.load();
 
+  // Registrera Media Session för att tillåta bakgrundsljud på iOS
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Meditationsgong",
+      artist: "Meditationsappen",
+      album: "Mindfulness",
+      artwork: [{ src: "favicon.ico", sizes: "512x512", type: "image/png" }],
+    });
+    navigator.mediaSession.playbackState = "playing";
+  }
+
   // Spela en bråkdels sekund tyst - detta låser upp iOS Audio-kontexten
-  gongAudio.volume = 1;
+  gongAudio.volume = 0.01;
   const unlockPromise = gongAudio.play();
   if (unlockPromise !== undefined) {
     unlockPromise
@@ -256,9 +270,22 @@ function tick() {
   remainingSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
   timeDisplay.textContent = formatTime(remainingSeconds);
 
+  // 10 sekunder före slut (enligt README)
+  if (
+    remainingSeconds <= 10 &&
+    remainingSeconds > 0 &&
+    !warningPlayed &&
+    totalSeconds > 15
+  ) {
+    playGong();
+    warningPlayed = true;
+  }
+
   if (remainingSeconds === 0) {
     clearInterval(timerInterval);
     timerInterval = null;
+    if ("mediaSession" in navigator)
+      navigator.mediaSession.playbackState = "paused";
     playGong();
     setTimeout(showFinished, 100);
   }
@@ -279,6 +306,7 @@ function startTimer() {
 
   // Lås upp ljud direkt vid användarklick - kritiskt för iOS
   unlockAndPreloadGong();
+  warningPlayed = false;
 
   remainingSeconds = totalSeconds;
 
@@ -301,12 +329,16 @@ function pauseTimer() {
     beginCountdown();
     pauseBtn.querySelector(".btn-text").textContent = "Paus";
     isPaused = false;
+    if ("mediaSession" in navigator)
+      navigator.mediaSession.playbackState = "playing";
   } else {
     clearInterval(timerInterval);
     timerInterval = null;
     localStorage.removeItem("gong_endTime");
     pauseBtn.querySelector(".btn-text").textContent = "Fortsätt";
     isPaused = true;
+    if ("mediaSession" in navigator)
+      navigator.mediaSession.playbackState = "paused";
   }
 }
 
@@ -316,7 +348,8 @@ function resetTimer() {
   timerInterval = null;
   endTime = null;
   isPaused = false;
-  gongAudio = null; // Släpp audio-objektet så det låses upp på nytt nästa gång
+  warningPlayed = false;
+  // Vi behåller gongAudio-objektet för att inte tappa "unlocked"-statusen
 
   setupView.style.display = "block";
   timerView.classList.remove("active");
